@@ -1,24 +1,41 @@
 apply plugin: 'com.android.library'
 
 android {
-  compileSdkVersion rootProject.ext.compileSdkVersion
-  buildToolsVersion rootProject.ext.buildToolsVersion
+  compileSdkVersion versions.compileSdk
 
   defaultConfig {
-    minSdkVersion rootProject.ext.minSdkVersion
+    minSdkVersion versions.minSdk
 
     consumerProguardFiles 'proguard-rules.txt'
+
+    testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+
+  lintOptions {
+    textReport true
+    textOutput 'stdout'
+    // We run a full lint analysis as build part in CI, so skip vital checks for assemble tasks.
+    checkReleaseBuilds false
+  }
+
+  // TODO replace with https://issuetracker.google.com/issues/72050365 once released.
+  libraryVariants.all {
+    it.generateBuildConfig.enabled = false
   }
 }
 
 dependencies {
-  compile project(':butterknife-annotations')
-  compile deps.supportAnnotations
-  provided deps.supportv4
+  api project(':butterknife-runtime')
 
-  testCompile deps.junit
-  testCompile deps.truth
-  testCompile deps.robolectric
+  androidTestImplementation deps.junit
+  androidTestImplementation deps.truth
+  androidTestImplementation deps.androidx.test.runner
+  androidTestAnnotationProcessor project(':butterknife-compiler')
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
